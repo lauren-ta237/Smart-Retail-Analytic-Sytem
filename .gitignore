@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+env/
+
+# Environment & Secrets
+.env
+
+# AI/ML & Data
+data/raw/*
+!data/raw/.gitkeep
+*.weights
+*.pt
+*.onnx
+
+# Logs & OS
+logs/*.log
+.vscode/
+.DS_Store
