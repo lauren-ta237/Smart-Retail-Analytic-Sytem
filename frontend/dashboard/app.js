@@ -1,4 +1,6 @@
 // --- Fully robust fetch override for analytics endpoints ---
+const API_URL = "https://smart-retail-analytic-sytem-1.onrender.com";
+
 function parseJwt(token) {
   try {
     return JSON.parse(atob(token.split('.')[1]));
@@ -8,7 +10,7 @@ function parseJwt(token) {
 }
 
 async function fetchToken(username, password) {
-  const resp = await window.originalFetch('/api/auth/token', {
+  const resp = await window.originalFetch(`${API_URL}/api/auth/token`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     body: `username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}`
@@ -40,17 +42,18 @@ window.fetch = async function(input, init = {}) {
   let url = typeof input === 'string' ? input : input.url;
   // Always inject token for analytics endpoints
   if (url && url.includes('/api/analytics/')) {
+    const fullUrl = url.startsWith('http') ? url : `${API_URL}${url}`;
     let token = await getGuaranteedToken();
     init = Object.assign({}, init); // avoid mutating caller's object
     init.headers = init.headers || {};
     if (init.headers instanceof Headers) {
       init.headers.set('Authorization', `Bearer ${token}`);
     } else {
-      // Clone headers if it's a plain object
+      // Clone headers if it's a plain object 
       init.headers = Object.assign({}, init.headers, { 'Authorization': `Bearer ${token}` });
     }
     try {
-      let resp = await window.originalFetch(input, init);
+      let resp = await window.originalFetch(fullUrl, init);
       // If unauthorized, always retry ONCE with a fresh token
       if (resp.status === 401) {
         token = await getGuaranteedToken(true); // force refresh
@@ -59,7 +62,7 @@ window.fetch = async function(input, init = {}) {
         } else {
           init.headers['Authorization'] = `Bearer ${token}`;
         }
-        resp = await window.originalFetch(input, init);
+        resp = await window.originalFetch(fullUrl, init);
       }
       return resp;
     } catch (e) {
@@ -70,10 +73,10 @@ window.fetch = async function(input, init = {}) {
   return window.originalFetch(input, init);
 };
 // --- End fully robust fetch override ---
-const dashboardSummaryUrl = '/api/analytics/dashboard-summary';
-const alertsUrl = '/api/analytics/alerts';
-const askUrl = '/api/analytics/ask';
-const testOpenAiUrl = '/api/analytics/test-openai';
+const dashboardSummaryUrl = `${API_URL}/api/analytics/dashboard-summary`;
+const alertsUrl = `${API_URL}/api/analytics/alerts`;
+const askUrl = `${API_URL}/api/analytics/ask`;
+const testOpenAiUrl = `${API_URL}/api/analytics/test-openai`;
 
 const totalCustomersEl = document.getElementById('totalCustomers');
 const activeSessionsEl = document.getElementById('activeSessions');
