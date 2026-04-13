@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Smart Retail Dashboard</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="container">
+    <header class="hero">
+      <div>
+        <p class="eyebrow">Smart Retail Vision Analytics</p>
+        <h1>Store Operations Dashboard</h1>
+        <p class="subtitle">
+          Monitor live shoppers, visit duration, entry and exit flow, zone hotspots, AI status, and export-ready management summaries from one page.
+        </p>
+      </div>
+      <div class="hero-actions">
+        <button id="refreshBtn">Refresh results</button>
+        <button id="testOpenAiBtn" class="secondary">Test OpenAI</button>
+        <button id="downloadJsonBtn" class="secondary">Download JSON</button>
+        <button id="downloadCsvBtn" class="secondary">Download CSV</button>
+        <button id="printReportBtn" class="secondary">Print / Save PDF</button>
+        <p id="statusText" class="status">Connecting...</p>
+      </div>
+    </header>
+
+    <section class="card-grid metrics">
+      <article class="metric-card">
+        <span>Total customers</span>
+        <strong id="totalCustomers">--</strong>
+      </article>
+      <article class="metric-card">
+        <span>Active shoppers</span>
+        <strong id="activeSessions">--</strong>
+      </article>
+      <article class="metric-card">
+        <span>Avg visit duration</span>
+        <strong id="avgVisitDuration">--</strong>
+      </article>
+      <article class="metric-card">
+        <span>Entries / exits today</span>
+        <strong id="entryExitCount">--</strong>
+      </article>
+      <article class="metric-card">
+        <span>Top zone</span>
+        <strong id="topZone">--</strong>
+      </article>
+      <article class="metric-card">
+        <span>Top product</span>
+        <strong id="topProduct">--</strong>
+      </article>
+      <article class="metric-card">
+        <span>Peak hour</span>
+        <strong id="peakHour">--</strong>
+      </article>
+    </section>
+
+    <section class="panel summary-panel" id="pdfSummaryCards">
+      <div class="panel-header">
+        <div>
+          <h2>🧾 PDF-ready summary cards</h2>
+          <p class="muted">Use these polished cards for management snapshots, printouts, or PDF exports.</p>
+        </div>
+      </div>
+      <div class="summary-card-grid">
+        <article class="summary-card">
+          <span class="summary-label">Store snapshot</span>
+          <h3 id="summaryHeadline">Waiting for live data...</h3>
+          <p id="summarySubtext">Refresh the dashboard to load the latest metrics.</p>
+        </article>
+        <article class="summary-card">
+          <span class="summary-label">Recommended next step</span>
+          <h3 id="summaryActionTitle">No action yet</h3>
+          <p id="summaryActionDetail">Recommended actions will appear here when the store data loads.</p>
+        </article>
+        <article class="summary-card">
+          <span class="summary-label">AI + backend status</span>
+          <h3 id="summaryStatusTitle">System check pending</h3>
+          <p id="summaryStatusDetail">OpenAI and backend status will be summarized here.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-header alert-header">
+        <div>
+          <h2>🚨 Real-time alerts</h2>
+          <p class="muted">Live alert monitoring for traffic spikes, zone hotspots, long visits, and backend warnings.</p>
+        </div>
+        <div class="alert-controls">
+          <button id="enableAlertsBtn" class="secondary">Enable browser alerts</button>
+          <p id="alertStatus" class="status">Monitoring every 5 seconds</p>
+        </div>
+      </div>
+      <div id="alertBanner" class="alert-banner info">Monitoring for new alerts...</div>
+      <div id="alertsList" class="alert-list"></div>
+    </section>
+
+    <section class="card-grid two-col">
+      <article class="panel">
+        <h2>📡 Live store snapshot</h2>
+        <ul id="liveSnapshot" class="list"></ul>
+      </article>
+
+      <article class="panel">
+        <h2>✅ System status</h2>
+        <div id="systemBadges" class="badges"></div>
+        <pre id="openAiTestResult" class="answer-box compact">Run the OpenAI test button to check the backend LLM connection.</pre>
+      </article>
+    </section>
+
+    <section class="card-grid charts-grid">
+      <article class="panel">
+        <h2>📈 Customer traffic trend</h2>
+        <div id="customerTrend" class="chart-list"></div>
+      </article>
+
+      <article class="panel">
+        <h2>🛍️ Product interest</h2>
+        <div id="productInterest" class="chart-list"></div>
+      </article>
+
+      <article class="panel">
+        <h2>📍 Zone traffic</h2>
+        <div id="zoneTraffic" class="chart-list"></div>
+      </article>
+    </section>
+
+    <section class="card-grid two-col">
+      <article class="panel">
+        <h2>🧭 Recommended actions</h2>
+        <ul id="actionList" class="list"></ul>
+      </article>
+
+      <article class="panel">
+        <h2>📚 Historical intelligence</h2>
+        <ul id="historicalSnapshot" class="list"></ul>
+      </article>
+    </section>
+
+    <section class="panel">
+      <h2>🤖 Ask the retail AI</h2>
+      <div class="ask-row">
+        <input
+          id="questionInput"
+          type="text"
+          placeholder="Example: What should I do about current customer traffic?"
+        />
+        <button id="askBtn">Ask AI</button>
+      </div>
+      <pre id="aiAnswer" class="answer-box">Your AI answer will appear here.</pre>
+    </section>
+
+    <section class="panel">
+      <h2>💡 How to use these results</h2>
+      <div class="tips-grid">
+        <div>
+          <h3>Staffing</h3>
+          <p>Use <strong>active shoppers</strong>, <strong>entries / exits</strong>, and <strong>peak hour</strong> to shift staff toward busy aisles and checkouts.</p>
+        </div>
+        <div>
+          <h3>Zone analytics</h3>
+          <p>Use <strong>top zone</strong> and the <strong>zone traffic</strong> chart to identify where support or layout changes are needed most.</p>
+        </div>
+        <div>
+          <h3>Exports</h3>
+          <p>Use <strong>Download JSON</strong>, <strong>Download CSV</strong>, or <strong>Print / Save PDF</strong> to share reports with managers.</p>
+        </div>
+        <div>
+          <h3>AI guidance</h3>
+          <p>Use the question box to get plain-language store recommendations based on your current live and historical data.</p>
+        </div>
+        <div>
+          <h3>Camera setup</h3>
+          <p>For the best counts, use an <strong>overhead</strong> or <strong>entrance-facing</strong> camera angle that covers the full <strong>entry / exit path</strong>.</p>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

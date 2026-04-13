@@ -1,0 +1,76 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: smart-retail-app
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: ${DATABASE_URL_DOCKER:-postgresql://postgres:postgres@db:5432/retail_db}
+      BACKEND_HOST: 0.0.0.0
+      BACKEND_PORT: 8000
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://127.0.0.1:8000/ || exit 1"]
+      interval: 20s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - ./logs:/app/logs
+      - ./data:/app/data
+    restart: unless-stopped
+
+  vision:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: smart-retail-vision
+    profiles:
+      - vision
+    command: python -m scripts.run_vision
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: ${DATABASE_URL_DOCKER:-postgresql://postgres:postgres@db:5432/retail_db}
+      BACKEND_HOST: app
+      BACKEND_PORT: 8000
+      VISION_EVENTS_URL: http://app:8000/api/analytics/events
+      VISION_HEALTHCHECK_URL: http://app:8000/
+      VISION_HEADLESS: "true"
+      CAMERA_SOURCE: ${CAMERA_SOURCE:-0}
+      PERSON_MODEL: ${PERSON_MODEL:-yolov8n.pt}
+    depends_on:
+      app:
+        condition: service_healthy
+    volumes:
+      - ./logs:/app/logs
+      - ./data:/app/data
+    stdin_open: true
+    tty: true
+    restart: unless-stopped
+
+  db:
+    image: postgres:16-alpine
+    container_name: smart-retail-db
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-retail_db}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-retail_db}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+volumes:
+  postgres_data:

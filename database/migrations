@@ -1,0 +1,5 @@
+this allows safe schema upgrade in production
+
+alembic revision --autogenerate -m
+' create retail tables'
+alembic upgrade head
